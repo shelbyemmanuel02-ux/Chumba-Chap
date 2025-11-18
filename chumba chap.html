@@ -1,0 +1,2268 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ChumbaChap - Tafuta chumba kiurahisi, haraka na salama bila madalali. Vyumba, self-contained, apartment, listings, na huduma bora.">
+    <meta name="keywords" content="chumba, vyumba, nyumba, rent, Tanzania, Dar es Salaam, listings, apartment, self-contained, bila madalali, landlord, chumba chap, chumbachap">
+    <meta name="author" content="ChumbaChap">
+    <title>ChumbaChap: Chumba Bila Tabu - Jukwaa la Vyumba Lenye Uwazi na Usalama</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #f59e0b;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+            --text-color: #374151;
+            --border-color: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --light-color: #1f2937;
+            --text-color: #f3f4f6;
+            --border-color: #374151;
+            --dark-color: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: var(--light-color);
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* Premium Navbar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        [data-theme="dark"] .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-badge {
+            background: var(--gradient);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        /* Enhanced Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #7c3aed 100%);
+            color: white;
+            padding: 8rem 0 4rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(360deg); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 1s ease;
+            background: linear-gradient(135deg, #fff 0%, #e0f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2.5rem;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease 0.2s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 3rem;
+            animation: fadeInUp 1s ease 0.4s both;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Enhanced Search Section */
+        .search-section {
+            padding: 4rem 0;
+            background: var(--light-color);
+        }
+
+        .search-form {
+            background: var(--light-color);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-xl);
+            margin-top: -4rem;
+            position: relative;
+            z-index: 10;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--light-color);
+            color: var(--text-color);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .amenities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            background: var(--light-color);
+        }
+
+        .checkbox-item:hover {
+            background: rgba(37, 99, 235, 0.05);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .checkbox-item input {
+            margin: 0;
+        }
+
+        /* AI Matching Section */
+        .ai-matching-section {
+            padding: 4rem 0;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+
+        [data-theme="dark"] .ai-matching-section {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        .matching-card {
+            background: var(--light-color);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-xl);
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .matching-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: var(--glass);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Enhanced Listings Section */
+        .listings-section {
+            padding: 4rem 0;
+            background: var(--light-color);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 2.8rem;
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-color);
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .listings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .listing-card {
+            background: var(--light-color);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .listing-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .listing-image {
+            width: 100%;
+            height: 220px;
+            background: var(--gradient);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .listing-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--success-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ai-match-badge {
+            background: var(--primary-color);
+        }
+
+        .listing-content {
+            padding: 1.5rem;
+        }
+
+        .listing-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+
+        .listing-location {
+            color: var(--text-color);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .listing-price {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .listing-amenities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .amenity-tag {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .listing-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        /* Map Section */
+        .map-section {
+            padding: 4rem 0;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        [data-theme="dark"] .map-section {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        #map {
+            height: 500px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Services Section */
+        .services-section {
+            padding: 4rem 0;
+            background: var(--light-color);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .service-card {
+            background: var(--light-color);
+            padding: 2.5rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+            background: linear-gradient(135deg, var(--light-color), #f0f9ff);
+        }
+
+        .service-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: white;
+        }
+
+        /* Enhanced Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        /* Enhanced Modal System */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--light-color);
+            padding: 2.5rem;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-color);
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Theme Toggle Enhancement */
+        .theme-toggle {
+            background: var(--glass);
+            color: var(--text-color);
+            border: 1px solid var(--glass-border);
+            padding: 0.75rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-toggle:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: rotate(180deg);
+        }
+
+        /* Language Toggle Enhancement */
+        .lang-toggle {
+            background: var(--glass);
+            color: var(--text-color);
+            border: 1px solid var(--glass-border);
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-weight: 500;
+        }
+
+        .lang-toggle:hover {
+            background: var(--secondary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Enhanced Footer */
+        .footer {
+            background: var(--dark-color);
+            color: var(--light-color);
+            padding: 4rem 0 1rem;
+            margin-top: 4rem;
+        }
+
+        .newsletter-section {
+            margin-bottom: 3rem;
+        }
+
+        .newsletter-form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 1.5rem;
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        .footer-logo h3 {
+            color: var(--secondary-color);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .verified-badge {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .footer-links a {
+            color: var(--light-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            opacity: 0.9;
+        }
+
+        .footer-links a:hover {
+            color: var(--secondary-color);
+            opacity: 1;
+            transform: translateX(8px);
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .contact-item i {
+            width: 20px;
+            color: var(--secondary-color);
+        }
+
+        .contact-item a {
+            color: var(--light-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .contact-item a:hover {
+            color: var(--secondary-color);
+        }
+
+        .social-section {
+            text-align: center;
+            padding: 3rem 0;
+            border-top: 1px solid #374151;
+            border-bottom: 1px solid #374151;
+            margin: 3rem 0;
+        }
+
+        .social-section h4 {
+            color: var(--secondary-color);
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .social-links a:hover {
+            background: var(--secondary-color);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 2rem;
+        }
+
+        .footer-bottom-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .copyright {
+            flex: 1;
+        }
+
+        .footer-badges {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            border: 1px solid var(--primary-color);
+        }
+
+        /* Loading Animation Enhancement */
+        .loading {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: fixed;
+                top: 80px;
+                left: 0;
+                right: 0;
+                background: var(--light-color);
+                flex-direction: column;
+                padding: 2rem;
+                box-shadow: var(--shadow-lg);
+                gap: 1.5rem;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-stats {
+                gap: 2rem;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .listings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .amenities-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .matching-features {
+                grid-template-columns: 1fr;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .footer-links {
+                align-items: center;
+            }
+
+            .contact-info {
+                align-items: center;
+            }
+
+            .footer-bottom-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .social-links a {
+                flex: 1;
+                min-width: 140px;
+                justify-content: center;
+            }
+        }
+
+        /* Notification Enhancement */
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            padding: 1.25rem 1.75rem;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            z-index: 1500;
+            animation: slideIn 0.3s ease;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .notification.success {
+            background: var(--success-color);
+        }
+
+        .notification.error {
+            background: var(--danger-color);
+        }
+
+        .notification.warning {
+            background: var(--warning-color);
+        }
+
+        .notification.info {
+            background: var(--info-color);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* AI Matching Progress */
+        .matching-progress {
+            background: var(--glass);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 1.5rem 0;
+            border: 1px solid var(--glass-border);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient);
+            border-radius: 10px;
+            transition: width 1s ease;
+        }
+
+        /* Trust Indicators */
+        .trust-indicators {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            padding: 0.75rem 1rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Premium Features */
+        .premium-feature {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .premium-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        /* Security Features */
+        .security-features {
+            background: linear-gradient(135deg, #fef2f2 0%, #fff7ed 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--danger-color);
+        }
+
+        [data-theme="dark"] .security-features {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+        }
+    </style>
+</head>
+<body>
+    <!-- Enhanced Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <a href="#" class="logo">
+                    <i class="fas fa-home"></i>
+                    <span>ChumbaChap</span>
+                    <span class="logo-badge">BETA</span>
+                </a>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="#search" data-sw="🔍 Tafuta" data-en="🔍 Search">🔍 Tafuta</a></li>
+                    <li><a href="#ai-matching" data-sw="🤝 AI Matching" data-en="🤝 AI Matching">🤝 AI Matching</a></li>
+                    <li><a href="#listings" data-sw="🏡 Vyumba" data-en="🏡 Listings">🏡 Vyumba</a></li>
+                    <li><a href="#map" data-sw="🗺️ Ramani" data-en="🗺️ Map">🗺️ Ramani</a></li>
+                    <li><a href="#services" data-sw="🛠️ Huduma" data-en="🛠️ Services">🛠️ Huduma</a></li>
+                    <li><a href="#about" data-sw="ℹ️ Kuhusu" data-en="ℹ️ About">ℹ️ Kuhusu</a></li>
+                </ul>
+                <div class="nav-actions">
+                    <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="lang-toggle" onclick="toggleLanguage()" id="langToggle" data-sw="English" data-en="Kiswahili">English</button>
+                    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Enhanced Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 data-sw="Chumba Bila Tabu" data-en="Room Without Hassle">Chumba Bila Tabu</h1>
+                <p>“creating a familiar neighborhood experience” </p>
+                <p data-sw="Jukwaa la kisasa la kutafuta vyumba kwa uwazi, usalama na ufanisi — bila madalali, bila udanganyifu." data-en="Modern platform for finding rooms with transparency, safety and efficiency — no brokers, no fraud.">Jukwaa la kisasa la kutafuta vyumba kwa uwazi, usalama na ufanisi — bila madalali, bila udanganyifu.</p>
+                <div class="hero-actions">
+                    <a href="#search" class="btn btn-primary" data-sw="🎯 Anza Kutafuta" data-en="🎯 Start Searching">🎯 Anza Kutafuta</a>
+                    <a href="#ai-matching" class="btn btn-secondary" data-sw="🤝 Pata Mapendekezo" data-en="🤝 Get Recommendations">🤝 Pata Mapendekezo</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="statsRooms">500+</span>
+                        <span class="stat-label" data-sw="Vyumba Vilivyopo" data-en="Available Rooms">Vyumba Vilivyopo</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="statsVerified">95%</span>
+                        <span class="stat-label" data-sw="Wamiliki Waliodhibitishwa" data-en="Verified Landlords">Wamiliki Waliodhibitishwa</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="statsCities">4</span>
+                        <span class="stat-label" data-sw="Miji Inayofanyiwa Kazi" data-en="Cities Covered">Miji Inayofanyiwa Kazi</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced Search Section -->
+    <section id="search" class="search-section">
+        <div class="container">
+            <div class="search-form">
+                <h2 data-sw="🔍 Tafuta Chumba Kikamilifu" data-en="🔍 Advanced Room Search">🔍 Tafuta Chumba Kikamilifu</h2>
+                <form id="searchForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label data-sw="📍 Eneo Unalotaka" data-en="📍 Preferred Location">📍 Eneo Unalotaka</label>
+                            <input type="text" class="form-control" id="locationInput" 
+                                   placeholder="Mf. Sinza, Dar es Salaam" required>
+                        </div>
+                        <div class="form-group">
+                            <label data-sw="🏠 Aina ya Chumba" data-en="🏠 Room Type">🏠 Aina ya Chumba</label>
+                            <select class="form-control" id="typeSelect" required>
+                                <option value="">-- Chagua Aina --</option>
+                                <option value="chumba">Chumba (Single Room)</option>
+                                <option value="self-contained">Self-contained</option>
+                                <option value="apartment">Apartment</option>
+                                <option value="bedsitter">Bedsitter</option>
+                                <option value="studio">Studio</option>
+                                <option value="hostel">Hostel</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-sw="💰 Bajeti Yako (TZS)" data-en="💰 Your Budget (TZS)">💰 Bajeti Yako (TZS)</label>
+                            <input type="number" class="form-control" id="budgetInput" 
+                                   placeholder="100,000" min="10000" step="5000" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label data-sw="🛎️ Huduma Unazotaka:" data-en="🛎️ Required Amenities:">🛎️ Huduma Unazotaka:</label>
+                        <div class="amenities-grid">
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="maji">
+                                <span data-sw="💧 Maji ya Mfereji" data-en="💧 Running Water">💧 Maji ya Mfereji</span>
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="umeme">
+                                <span data-sw="⚡ Umeme wa Taa" data-en="⚡ Electricity">⚡ Umeme wa Taa</span>
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="wifi">
+                                <span data-sw="📶 Wi-Fi ya Haraka" data-en="📶 Fast Wi-Fi">📶 Wi-Fi ya Haraka</span>
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="parking">
+                                <span data-sw="🚗 Eneo la Gari" data-en="🚗 Parking Space">🚗 Eneo la Gari</span>
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="security">
+                                <span data-sw="🔒 Usalama 24/7" data-en="🔒 24/7 Security">🔒 Usalama 24/7</span>
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="furnished">
+                                <span data-sw="🪑 Samani Tayari" data-en="🪑 Furnished">🪑 Samani Tayari</span>
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="generator">
+                                <span data-sw="🔋 Jenareta" data-en="🔋 Generator">🔋 Jenareta</span>
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="garden">
+                                <span data-sw="🌳 Bustani" data-en="🌳 Garden">🌳 Bustani</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-sw="🎯 Vipimo Vingine:" data-en="🎯 Other Preferences:">🎯 Vipimo Vingine:</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                            <div>
+                                <label data-sw="Idadi ya Vyumba:" data-en="Number of Rooms:">Idadi ya Vyumba:</label>
+                                <select class="form-control" id="roomCount">
+                                    <option value="">Yoyote</option>
+                                    <option value="1">1 Chumba</option>
+                                    <option value="2">2 Vyumba</option>
+                                    <option value="3">3 Vyumba</option>
+                                    <option value="4+">4+ Vyumba</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label data-sw="Umri wa Jengo:" data-en="Building Age:">Umri wa Jengo:</label>
+                                <select class="form-control" id="buildingAge">
+                                    <option value="">Yoyote</option>
+                                    <option value="new">Jipya (< 5 yrs)</option>
+                                    <option value="medium">Kati (5-15 yrs)</option>
+                                    <option value="old">Kale (> 15 yrs)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions" style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            <span data-sw="Tafuta Vyumba" data-en="Search Rooms">Tafuta Vyumba</span>
+                            <span class="loading" id="searchLoading" style="display: none;"></span>
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="showAIMatching()">
+                            <i class="fas fa-robot"></i>
+                            <span data-sw="Tafuta kwa AI" data-en="AI Search">Tafuta kwa AI</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Matching Section -->
+    <section id="ai-matching" class="ai-matching-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" data-sw="🤝 Kipimo cha AI" data-en="🤝 AI Matching">🤝 Kipimo cha AI</h2>
+                <p class="section-subtitle" data-sw="Tumia akili bandia kupata chumba kinachokufaa zaidi kulingana na mapendeleo yako" data-en="Use artificial intelligence to find the perfect room match based on your preferences">Tumia akili bandia kupata chumba kinachokufaa zaidi kulingana na mapendeleo yako</p>
+            </div>
+            <div class="matching-card">
+                <div class="matching-progress">
+                    <h4 data-sw="Kipimo chako cha AI: <span id='matchScore'>85%</span>" data-en="Your AI Match Score: <span id='matchScore'>85%</span>">Kipimo chako cha AI: <span id='matchScore'>85%</span></h4>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 85%;"></div>
+                    </div>
+                    <p data-sw="Tunakupatia mapendekezo bora zaidi kulingana na mahitaji yako" data-en="We're finding you the best recommendations based on your needs">Tunakupatia mapendekezo bora zaidi kulingana na mahitaji yako</p>
+                </div>
+                
+                <div class="matching-features">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h4 data-sw="Mapendekezo Binafsi" data-en="Personalized Recommendations">Mapendekezo Binafsi</h4>
+                        <p data-sw="AI inachambua mapendeleo yako na kukupatia vyumba vinavyokufaa zaidi" data-en="AI analyzes your preferences to find rooms that match you best">AI inachambua mapendeleo yako na kukupatia vyumba vinavyokufaa zaidi</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h4 data-sw="Ufanisi wa Muda" data-en="Time Efficiency">Ufanisi wa Muda</h4>
+                        <p data-sw="Punguza muda wa kutafuta kwa kupata mapendekezo makini" data-en="Save search time with curated recommendations">Punguza muda wa kutafuta kwa kupata mapendekezo makini</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔍</div>
+                        <h4 data-sw="Uchambuzi wa kina" data-en="Deep Analysis">Uchambuzi wa kina</h4>
+                        <p data-sw="Chambua mambo yote muhimu: bei, eneo, huduma, na usalama" data-en="Analyze all key factors: price, location, amenities, and safety">Chambua mambo yote muhimu: bei, eneo, huduma, na usalama</p>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="startAIMatching()" style="margin-top: 2rem;">
+                    <i class="fas fa-play"></i>
+                    <span data-sw="Anza Kipimo cha AI" data-en="Start AI Matching">Anza Kipimo cha AI</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced Listings Section -->
+    <section id="listings" class="listings-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" data-sw="🏡 Vyumba Vilivyothibitishwa" data-en="🏡 Verified Rooms">🏡 Vyumba Vilivyothibitishwa</h2>
+                <p class="section-subtitle" data-sw="Chagua kutoka kwenye vyumba vya hali ya juu vilivyothibitishwa na mfumo wetu wa usalama" data-en="Choose from premium rooms verified by our security system">Chagua kutoka kwenye vyumba vya hali ya juu vilivyothibitishwa na mfumo wetu wa usalama</p>
+            </div>
+            
+            <div class="trust-indicators" style="justify-content: center; margin-bottom: 2rem;">
+                <div class="trust-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <span data-sw="Vyumba Vilivyothibitishwa" data-en="Verified Rooms">Vyumba Vilivyothibitishwa</span>
+                </div>
+                <div class="trust-badge">
+                    <i class="fas fa-user-check"></i>
+                    <span data-sw="Wamiliki Walioidhinishwa" data-en="Approved Landlords">Wamiliki Walioidhinishwa</span>
+                </div>
+                <div class="trust-badge">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span data-sw="Eneo Halisi" data-en="Real Location">Eneo Halisi</span>
+                </div>
+            </div>
+
+            <div class="listings-grid" id="listingGrid">
+                <!-- Listings will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section id="map" class="map-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" data-sw="🗺️ Ramani ya Vyumba" data-en="🗺️ Room Map">🗺️ Ramani ya Vyumba</h2>
+                <p class="section-subtitle" data-sw="Angalia vyumba kwenye ramani na utafute huduma za karibu kama shule, hospitali na vituo vya usafiri" data-en="View rooms on map and find nearby services like schools, hospitals and transport hubs">Angalia vyumba kwenye ramani na utafute huduma za karibu kama shule, hospitali na vituo vya usafiri</p>
+            </div>
+            <div id="map"></div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" data-sw="🛠️ Huduma Zetu za Ziada" data-en="🛠️ Our Additional Services">🛠️ Huduma Zetu za Ziada</h2>
+                <p class="section-subtitle" data-sw="Huduma muhimu za kukurahisisha uhamiaji wako na maisha katika nyumba mpya" data-en="Essential services to simplify your move and life in your new home">Huduma muhimu za kukurahisisha uhamiaji wako na maisha katika nyumba mpya</p>
+            </div>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-truck-moving"></i>
+                    </div>
+                    <h3 data-sw="Huduma za Kuhamisha" data-en="Moving Services">Pack mate</h3>
+                    <p data-sw="Wasafiri wa kuhamisha mizigo kwa bei nafuu na usalama" data-en="Affordable and secure moving transporters">Wasafiri wa kuhamisha mizigo kwa bei nafuu na usalama</p>
+                    <button class="btn btn-secondary" onclick="showServiceModal('moving')" data-sw="Angalia Huduma" data-en="View Service">Angalia Huduma</button>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-broom"></i>
+                    </div>
+                    <h3 data-sw="Usafiri wa Nyumba" data-en="House Cleaning">Pack mate</h3>
+                    <p data-sw="Wataalamu wa kusafisha nyumba kabla na baada ya uhamiaji" data-en="Professional cleaners for before and after moving">Wataalamu wa kusafisha nyumba kabla na baada ya uhamiaji</p>
+                    <button class="btn btn-secondary" onclick="showServiceModal('cleaning')" data-sw="Angalia Huduma" data-en="View Service">Angalia Huduma</button>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-couch"></i>
+                    </div>
+                    <h3 data-sw="Kukodisha Samani" data-en="Furniture Rental">Pack mate</h3>
+                    <p data-sw="Samani za kisasa za kukodisha kwa muda mfupi au mrefu" data-en="Modern furniture for short or long term rental">Samani za kisasa za kukodisha kwa muda mfupi au mrefu</p>
+                    <button class="btn btn-secondary" onclick="showServiceModal('furniture')" data-sw="Angalia Huduma" data-en="View Service">Angalia Huduma</button>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <h3 data-sw="Mikataba ya Kukodisha" data-en="Rental Agreements">Mikataba ya Kukodisha</h3>
+                    <p data-sw="Mikataba ya kisheria iliyotengenezwa kwa ajili ya wakodishi na wamiliki" data-en="Legal agreements tailored for tenants and landlords">Mikataba ya kisheria iliyotengenezwa kwa ajili ya wakodishi na wamiliki</p>
+                    <button class="btn btn-secondary" onclick="showServiceModal('contracts')" data-sw="Angalia Huduma" data-en="View Service">Angalia Huduma</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="search-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" data-sw="🚀 Kuhusu ChumbaChap" data-en="🚀 About ChumbaChap">🚀 Kuhusu ChumbaChap</h2>
+                <p data-sw="ChumbaChap ni zaidi ya jukwaa la kutafuta vyumba - ni mfumo mzima wa kurahisisha upangaji wa makazi kwa watanzania wote." 
+                   data-en="ChumbaChap is more than a room-finding platform - it's a complete system to simplify housing for all Tanzanians.">
+                    ChumbaChap ni zaidi ya jukwaa la kutafuta vyumba - ni mfumo mzima wa kurahisisha upangaji wa makazi kwa watanzania wote.
+                </p>
+            </div>
+            
+            <div class="security-features">
+                <h4 data-sw="🔒 Ulinzi Wetu wa Kipekee" data-en="🔒 Our Unique Protection">🔒 Ulinzi Wetu wa Kipekee</h4>
+                <p data-sw="Tunatumia mfumo wa uthibitishho wa kina kuhakikisha usalama wako:" data-en="We use comprehensive verification to ensure your safety:">Tunatumia mfumo wa uthibitishho wa kina kuhakikisha usalama wako:</p>
+                <ul style="margin-top: 1rem;">
+                    <li data-sw="✅ Uthibitishaji wa vitambulisho vya wamiliki" data-en="✅ Landlord identity verification">✅ Uthibitishaji wa vitambulisho vya wamiliki</li>
+                    <li data-sw="✅ Ukaguzi wa nyumba na wataalamu" data-en="✅ Professional property inspection">✅ Ukaguzi wa nyumba na wataalamu</li>
+                    <li data-sw="✅ Mfumo wa maoni na ukaguzi wa wateja" data-en="✅ Customer review and rating system">✅ Mfumo wa maoni na ukaguzi wa wateja</li>
+                    <li data-sw="✅ Kifedha cha usalama cha amana" data-en="✅ Security deposit escrow">✅ Kifedha cha usalama cha amana</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Modal -->
+    <div class="modal" id="contactModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-sw="📞 Mawasiliano na Mwenye Nyumba" data-en="📞 Contact Landlord">📞 Mawasiliano na Mwenye Nyumba</h3>
+                <button class="close-modal" onclick="closeModal('contactModal')">&times;</button>
+            </div>
+            <div id="contactInfo">
+                <!-- Contact details will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Listing Details Modal -->
+    <div class="modal" id="listingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-sw="🏠 Maelezo Kamili ya Chumba" data-en="🏠 Complete Room Details">🏠 Maelezo Kamili ya Chumba</h3>
+                <button class="close-modal" onclick="closeModal('listingModal')">&times;</button>
+            </div>
+            <div id="listingDetails">
+                <!-- Listing details will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Matching Modal -->
+    <div class="modal" id="aiMatchingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-sw="🤝 Kipimo cha AI cha Chumba" data-en="🤝 AI Room Matching">🤝 Kipimo cha AI cha Chumba</h3>
+                <button class="close-modal" onclick="closeModal('aiMatchingModal')">&times;</button>
+            </div>
+            <div id="aiMatchingContent">
+                <div class="matching-progress">
+                    <h4 data-sw="Tunachambua mahitaji yako..." data-en="Analyzing your needs...">Tunachambua mahitaji yako...</h4>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="aiProgressBar" style="width: 0%;"></div>
+                    </div>
+                    <p id="aiStatus" data-sw="Inapima eneo lako la kufaa..." data-en="Matching your preferred location...">Inapima eneo lako la kufaa...</p>
+                </div>
+                <div id="aiResults" style="display: none;">
+                    <h4 data-sw="Mapendekezo Yetu:" data-en="Our Recommendations:">Mapendekezo Yetu:</h4>
+                    <div id="aiRecommendations"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Modals -->
+    <div class="modal" id="serviceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="serviceModalTitle">Service Details</h3>
+                <button class="close-modal" onclick="closeModal('serviceModal')">&times;</button>
+            </div>
+            <div id="serviceModalContent">
+                <!-- Service details will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <!-- Newsletter Section -->
+            <div class="newsletter-section">
+                <div style="text-align: center; padding: 2rem 0; border-bottom: 1px solid #374151;">
+                    <h3 data-sw="📬 Pokea Taarifa za Vyumba Vipya" data-en="📬 Get Alerts for New Rooms">📬 Pokea Taarifa za Vyumba Vipya</h3>
+                    <p style="margin-bottom: 1.5rem;" data-sw="Jiunge nasi kupokea taarifa za vyumba vipya vilivyoongezwa." data-en="Join us to receive notifications about newly added rooms.">Jiunge nasi kupokea taarifa za vyumba vipya vilivyoongezwa.</p>
+                    <div class="newsletter-form">
+                        <input type="email" placeholder="Ingiza email yako / Enter your email" class="form-control" style="max-width: 300px; display: inline-block; margin-right: 0.5rem;">
+                        <button class="btn btn-primary" onclick="subscribeNewsletter()">
+                            <i class="fas fa-bell"></i>
+                            <span data-sw="Jiunge" data-en="Subscribe">Jiunge</span> 
+                        </button>
+                        <h3>or join Our Channel</h3>
+                        <button class="btn btn-primary" onclick="subscribeNewsletter()">
+                            <i class="fas fa-bell"></i>
+                            <span data-sw="https://wa.me/255610222824" data-en="Subscribe">whatsapp</span> 
+                        </button>
+                
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-content">
+                <!-- Company Info -->
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <h3><i class="fas fa-home"></i> ChumbaChap</h3>
+                        <div class="verified-badge">
+                            <i class="fas fa-shield-alt" style="color: var(--success-color);"></i>
+                            <span data-sw="Wenye Nyumba Waliodhibitishwa Pekee" data-en="Verified Landlords Only">Wenye Nyumba Waliodhibitishwa Pekee</span>
+                        </div>
+                    </div>
+                    <p data-sw="Jukwaa la kisasa la kutafuta vyumba kwa urahisi na usalama - bila madalali, bila utapeli." data-en="Modern platform for finding rooms easily and safely - no brokers, no fraud.">Jukwaa la kisasa la kutafuta vyumba kwa urahisi na usalama - bila madalali, bila utapeli.</p>
+                    <div class="trust-indicators">
+                        <div class="trust-badge">
+                            <i class="fas fa-check-circle"></i>
+                            <span data-sw="Hakuna Madalali" data-en="No Brokers">Hakuna Madalali</span>
+                        </div>
+                        <div class="trust-badge">
+                            <i class="fas fa-shield-alt"></i>
+                            <span data-sw="Usalama wa Juu" data-en="High Security">Usalama wa Juu</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="footer-section">
+                    <h4 data-sw="Viungo Muhimu" data-en="Quick Links">Viungo Muhimu</h4>
+                    <div class="footer-links">
+                        <a href="#search"><i class="fas fa-search"></i> <span data-sw="Tafuta Vyumba" data-en="Search Rooms">Tafuta Vyumba</span></a>
+                        <a href="#ai-matching"><i class="fas fa-robot"></i> <span data-sw="Kipimo cha AI" data-en="AI Matching">Kipimo cha AI</span></a>
+                        <a href="#listings"><i class="fas fa-list"></i> <span data-sw="Vyumba Vilivyopo" data-en="Available Rooms">Vyumba Vilivyopo</span></a>
+                        <a href="#map"><i class="fas fa-map"></i> <span data-sw="Ramani ya Vyumba" data-en="Room Map">Ramani ya Vyumba</span></a>
+                        <a href="#services"><i class="fas fa-tools"></i> <span data-sw="Huduma Zetu" data-en="Our Services">Huduma Zetu</span></a>
+                        <a href="#about"><i class="fas fa-info-circle"></i> <span data-sw="Kuhusu Sisi" data-en="About Us">Kuhusu Sisi</span></a>
+                    </div>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="footer-section">
+                    <h4 data-sw="Mawasiliano" data-en="Contact Information">Mawasiliano</h4>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>Email: <a href="mailto:info@chumbachap.com">info@chumbachap.com</a></span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fab fa-whatsapp" style="color: #25d366;"></i>
+                            <span>WhatsApp: <a href="https://wa.me/255610222824" target="_blank">+255 610 222 824</a></span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <span data-sw="Simu:" data-en="Calls:">Simu:</span> <a href="tel:+255650222824">+255 650 222 824</a>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span data-sw="Makao Makuu: Dar es Salaam, Tanzania" data-en="Headquarters: Dar es Salaam, Tanzania">Makao Makuu: Dar es Salaam, Tanzania</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-clock"></i>
+                            <span data-sw="Saa za Huduma: 24/7" data-en="Service Hours: 24/7">Saa za Huduma: 24/7</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legal & Support -->
+                <div class="footer-section">
+                    <h4 data-sw="Sheria na Usaidizi" data-en="Legal & Support">Sheria na Usaidizi</h4>
+                    <div class="footer-links">
+                        <a href="#" onclick="showModal('privacyModal')">
+                            <i class="fas fa-user-shield"></i> 
+                            <span data-sw="Sera ya Faragha" data-en="Privacy Policy">Sera ya Faragha</span>
+                        </a>
+                        <a href="#" onclick="showModal('termsModal')">
+                            <i class="fas fa-file-contract"></i> 
+                            <span data-sw="Masharti ya Huduma" data-en="Terms of Service">Masharti ya Huduma</span>
+                        </a>
+                        <a href="#" onclick="showModal('cookiesModal')">
+                            <i class="fas fa-cookie-bite"></i> 
+                            <span data-sw="Sera ya Cookies" data-en="Cookie Policy">Sera ya Cookies</span>
+                        </a>
+                        <a href="#" onclick="showModal('disclaimerModal')">
+                            <i class="fas fa-exclamation-triangle"></i> 
+                            <span data-sw="Kanusho" data-en="Disclaimer">Kanusho</span>
+                        </a>
+                        <a href="#" onclick="showModal('safetyModal')">
+                            <i class="fas fa-shield-alt"></i> 
+                            <span data-sw="Mwongozo wa Usalama" data-en="Safety Guidelines">Mwongozo wa Usalama</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Social Media Section -->
+            <div class="social-section">
+                <h4 data-sw="Tufuate Mitandaoni" data-en="Follow Us on Social Media">Tufuate Mitandaoni</h4>
+                <div class="social-links">
+                    <a href="https://facebook.com/chumbachap" target="_blank" rel="noopener" aria-label="Facebook" title="Facebook">
+                        <i class="fab fa-facebook"></i>
+                        <span>Facebook</span>
+                    </a>
+                    <a href="https://instagram.com/chumbachap" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram">
+                        <i class="fab fa-instagram"></i>
+                        <span>Instagram</span>
+                    </a>
+                    <a href="https://twitter.com/chumbachap" target="_blank" rel="noopener" aria-label="Twitter" title="Twitter">
+                        <i class="fab fa-twitter"></i>
+                        <span>Twitter</span>
+                    </a>
+                    <a href="https://tiktok.com/@chumbachap" target="_blank" rel="noopener" aria-label="TikTok" title="TikTok">
+                        <i class="fab fa-tiktok"></i>
+                        <span>TikTok</span>
+                    </a>
+                    <a href="https://youtube.com/@chumbachap" target="_blank" rel="noopener" aria-label="YouTube" title="YouTube">
+                        <i class="fab fa-youtube"></i>
+                        <span>YouTube</span>
+                    </a>
+                    <a href="https://wa.me/255610222824" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>WhatsApp</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Bottom Footer -->
+            <div class="footer-bottom">
+                <div class="footer-bottom-content">
+                    <div class="copyright">
+                        <p>&copy; <span id="footerYear">2025</span> ChumbaChap. <span data-sw="Haki zote zimehifadhiwa." data-en="All rights reserved.">Haki zote zimehifadhiwa.</span></p>
+                        <p style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">
+                            <span data-sw="Imeundwa kwa upendo Tanzania 🇹🇿" data-en="Made with love in Tanzania 🇹🇿">Imeundwa kwa upendo Tanzania 🇹🇿</span>
+                        </p>
+                    </div>
+                    <div class="footer-badges">
+                        <span class="badge">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span data-sw="Mobile Friendly" data-en="Mobile Friendly">Mobile Friendly</span>
+                        </span>
+                        <span class="badge">
+                            <i class="fas fa-lock"></i>
+                            <span data-sw="SSL Secure" data-en="SSL Secure">SSL Secure</span>
+                        </span>
+                        <span class="badge">
+                            <i class="fas fa-language"></i>
+                            <span data-sw="Multilingual" data-en="Multilingual">Multilingual</span>
+                        </span>
+                        <span class="badge">
+                            <i class="fas fa-robot"></i>
+                            <span data-sw="AI Powered" data-en="AI Powered">AI Powered</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Legal Modals (Same as before but enhanced) -->
+    <!-- Privacy Policy Modal -->
+    <div class="modal" id="privacyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-sw="🔒 Sera ya Faragha" data-en="🔒 Privacy Policy">🔒 Sera ya Faragha</h3>
+                <button class="close-modal" onclick="closeModal('privacyModal')">&times;</button>
+            </div>
+            <div style="max-height: 60vh; overflow-y: auto;">
+                <div data-sw="
+                    <h4>Ukusanyaji wa Taarifa</h4>
+                    <p>ChumbaChap inakusanya taarifa unazotoa wakati wa kutafuta vyumba au kuwasiliana na wenye nyumba.</p>
+                    
+                    <h4>Matumizi ya Taarifa</h4>
+                    <p>Taarifa zako zinatumika tu kwa madhumuni ya kukuunganisha na wenye nyumba na kuboresha huduma zetu.</p>
+                    
+                    <h4>Usalama wa Taarifa</h4>
+                    <p>Tunahakikisha taarifa zako zimehifadhiwa kwa usalama na hazitashirikishwa na wahusika wa tatu bila idhini yako.</p>
+                    
+                    <h4>Haki Zako</h4>
+                    <p>Una haki ya kuomba kufuta au kubadilisha taarifa zako wakati wowote.</p>
+                " data-en="
+                    <h4>Information Collection</h4>
+                    <p>ChumbaChap collects information you provide when searching for rooms or contacting landlords.</p>
+                    
+                    <h4>Use of Information</h4>
+                    <p>Your information is only used to connect you with landlords and improve our services.</p>
+                    
+                    <h4>Information Security</h4>
+                    <p>We ensure your information is stored securely and will not be shared with third parties without your permission.</p>
+                    
+                    <h4>Your Rights</h4>
+                    <p>You have the right to request deletion or modification of your information at any time.</p>
+                ">
+                    <h4>Ukusanyaji wa Taarifa</h4>
+                    <p>ChumbaChap inakusanya taarifa unazotoa wakati wa kutafuta vyumba au kuwasiliana na wenye nyumba.</p>
+                    
+                    <h4>Matumizi ya Taarifa</h4>
+                    <p>Taarifa zako zinatumika tu kwa madhumuni ya kukuunganisha na wenye nyumba na kuboresha huduma zetu.</p>
+                    
+                    <h4>Usalama wa Taarifa</h4>
+                    <p>Tunahakikisha taarifa zako zimehifadhiwa kwa usalama na hazitashirikishwa na wahusika wa tatu bila idhini yako.</p>
+                    
+                    <h4>Haki Zako</h4>
+                    <p>Una haki ya kuomba kufuta au kubadilisha taarifa zako wakati wowote.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms of Service Modal -->
+    <div class="modal" id="termsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-sw="📋 Masharti ya Huduma" data-en="📋 Terms of Service">📋 Masharti ya Huduma</h3>
+                <button class="close-modal" onclick="closeModal('termsModal')">&times;</button>
+            </div>
+            <div style="max-height: 60vh; overflow-y: auto;">
+                <div data-sw="
+                    <h4>Matumizi ya Jukwaa</h4>
+                    <p>ChumbaChap ni jukwaa la kuunganisha wapangaji na wenye nyumba. Hatutoi dhamana za makubaliano yanayofanywa.</p>
+                    
+                    <h4>Wajibu wa Watumiaji</h4>
+                    <p>Watumiaji wanahitajika kutoa taarifa za kweli na kuwa na tabia nzuri wakati wa kuwasiliana.</p>
+                    
+                    <h4>Malipo na Miamala</h4>
+                    <p>Malipo yote yanafanyika moja kwa moja kati ya mpangaji na mmiliki wa nyumba. ChumbaChap haihusiki.</p>
+                    
+                    <h4>Masharti ya Kutumia</h4>
+                    <p>Matumizi mabaya ya jukwaa hili yataongoza kwa kufungwa kwa akaunti na hatua za kisheria.</p>
+                " data-en="
+                    <h4>Platform Usage</h4>
+                    <p>ChumbaChap is a platform to connect tenants and landlords. We do not guarantee agreements made.</p>
+                    
+                    <h4>User Responsibility</h4>
+                    <p>Users are required to provide accurate information and maintain good behavior when communicating.</p>
+                    
+                    <h4>Payments and Transactions</h4>
+                    <p>All payments are made directly between tenant and property owner. ChumbaChap is not involved.</p>
+                    
+                    <h4>Terms of Use</h4>
+                    <p>Misuse of this platform will lead to account suspension and legal action.</p>
+                ">
+                    <h4>Matumizi ya Jukwaa</h4>
+                    <p>ChumbaChap ni jukwaa la kuunganisha wapangaji na wenye nyumba. Hatutoi dhamana za makubaliano yanayofanywa.</p>
+                    
+                    <h4>Wajibu wa Watumiaji</h4>
+                    <p>Watumiaji wanahitajika kutoa taarifa za kweli na kuwa na tabia nzuri wakati wa kuwasiliana.</p>
+                    
+                    <h4>Malipo na Miamala</h4>
+                    <p>Malipo yote yanafanyika moja kwa moja kati ya mpangaji na mmiliki wa nyumba. ChumbaChap haihusiki.</p>
+                    
+                    <h4>Masharti ya Kutumia</h4>
+                    <p>Matumizi mabaya ya jukwaa hili yataongoza kwa kufungwa kwa akaunti na hatua za kisheria.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Safety Guidelines Modal -->
+    <div class="modal" id="safetyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-sw="🛡️ Mwongozo wa Usalama" data-en="🛡️ Safety Guidelines">🛡️ Mwongozo wa Usalama</h3>
+                <button class="close-modal" onclick="closeModal('safetyModal')">&times;</button>
+            </div>
+            <div style="max-height: 60vh; overflow-y: auto;">
+                <div data-sw="
+                    <div style='background: #fef3c7; padding: 1rem; border-radius: 8px; border-left: 4px solid #f59e0b; margin-bottom: 1rem;'>
+                        <h4>⚠️ Maonyo Muhimu</h4>
+                        <p><strong>KAMWE usilipe chochote kabla ya kuona chumba!</strong></p>
+                    </div>
+                    
+                    <h4>Hatua za Usalama:</h4>
+                    <ul>
+                        <li>✅ Tembelea chumba kwa macho yako kabla ya kulipa</li>
+                        <li>✅ Thibitisha utambulisho wa mmiliki wa nyumba</li>
+                        <li>✅ Wasiliana moja kwa moja na mmiliki</li>
+                        <li>✅ Omba stakabadhi rasmi za malipo</li>
+                        <li>✅ Soma makubaliano kwa makini</li>
+                    </ul>
+                    
+                    <h4>Dalili za Utapeli:</h4>
+                    <ul>
+                        <li>❌ Kuomba malipo mapema</li>
+                        <li>❌ Bei ya chini sana</li>
+                        <li>❌ Kukataa kukutana</li>
+                        <li>❌ Kutotoa taarifa za kutosha</li>
+                        <li>❌ Haraka ya kupita kiasi</li>
+                    </ul>
+                " data-en="
+                    <div style='background: #fef3c7; padding: 1rem; border-radius: 8px; border-left: 4px solid #f59e0b; margin-bottom: 1rem;'>
+                        <h4>⚠️ Important Warning</h4>
+                        <p><strong>NEVER pay anything before seeing the room!</strong></p>
+                    </div>
+                    
+                    <h4>Safety Steps:</h4>
+                    <ul>
+                        <li>✅ Visit the room with your own eyes before paying</li>
+                        <li>✅ Verify the landlord's identity</li>
+                        <li>✅ Communicate directly with the owner</li>
+                        <li>✅ Request official payment receipts</li>
+                        <li>✅ Read agreements carefully</li>
+                    </ul>
+                    
+                    <h4>Signs of Fraud:</h4>
+                    <ul>
+                        <li>❌ Requesting early payment</li>
+                        <li>❌ Prices too low</li>
+                        <li>❌ Refusing to meet</li>
+                        <li>❌ Not providing enough information</li>
+                        <li>❌ Excessive urgency</li>
+                    </ul>
+                ">
+                    <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; border-left: 4px solid #f59e0b; margin-bottom: 1rem;">
+                        <h4>⚠️ Maonyo Muhimu</h4>
+                        <p><strong>KAMWE usilipe chochote kabla ya kuona chumba!</strong></p>
+                    </div>
+                    
+                    <h4>Hatua za Usalama:</h4>
+                    <ul>
+                        <li>✅ Tembelea chumba kwa macho yako kabla ya kulipa</li>
+                        <li>✅ Thibitisha utambulisho wa mmiliki wa nyumba</li>
+                        <li>✅ Wasiliana moja kwa moja na mmiliki</li>
+                        <li>✅ Omba stakabadhi rasmi za malipo</li>
+                        <li>✅ Soma makubaliano kwa makini</li>
+                    </ul>
+                    
+                    <h4>Dalili za Utapeli:</h4>
+                    <ul>
+                        <li>❌ Kuomba malipo mapema</li>
+                        <li>❌ Bei ya chini sana</li>
+                        <li>❌ Kukataa kukutana</li>
+                        <li>❌ Kutotoa taarifa za kutosha</li>
+                        <li>❌ Haraka ya kupita kiasi</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works Modal -->
+    <div class="modal" id="howItWorksModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-sw="🎯 Jinsi Inavyofanya Kazi" data-en="🎯 How It Works">🎯 Jinsi Inavyofanya Kazi</h3>
+                <button class="close-modal" onclick="closeModal('howItWorksModal')">&times;</button>
+            </div>
+            <div style="max-height: 60vh; overflow-y: auto;">
+                <div data-sw="
+                    <div style='text-align: center; margin-bottom: 2rem;'>
+                        <h4>Hatua 3 Rahisi Kupata Chumba!</h4>
+                    </div>
+                    
+                    <div style='display: flex; flex-direction: column; gap: 1.5rem;'>
+                        <div style='display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f0f9ff; border-radius: 8px;'>
+                            <div style='background: var(--primary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;'>1</div>
+                            <div>
+                                <h4>🔍 Tafuta Chumba</h4>
+                                <p>Ingiza eneo, aina ya chumba, na bajeti yako. Tutakuonyesha vyumba vinavyofaa.</p>
+                            </div>
+                        </div>
+                        
+                        <div style='display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f0fdf4; border-radius: 8px;'>
+                            <div style='background: var(--success-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;'>2</div>
+                            <div>
+                                <h4>📞 Wasiliana Moja kwa Moja</h4>
+                                <p>Pata taarifa za kuwasiliana na mmiliki wa nyumba bila kuongeza gharama.</p>
+                            </div>
+                        </div>
+                        
+                        <div style='display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #fef3c7; border-radius: 8px;'>
+                            <div style='background: var(--secondary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;'>3</div>
+                            <div>
+                                <h4>🏠 Tembelea na Uhamie</h4>
+                                <p>Panga mkutano, ona chumba, na ikiwa umeridhika - uhamie!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style='background: #1f2937; color: white; padding: 1rem; border-radius: 8px; margin-top: 2rem; text-align: center;'>
+                        <h4>💡 Faida za ChumbaChap</h4>
+                        <ul style='text-align: left; margin-top: 1rem;'>
+                            <li>✅ Hakuna ada za madalali</li>
+                            <li>✅ Wasiliana moja kwa moja na wenye nyumba</li>
+                            <li>✅ Wenye nyumba waliodhibitishwa</li>
+                            <li>✅ Huduma ya haraka na salama</li>
+                        </ul>
+                    </div>
+                " data-en="
+                    <div style='text-align: center; margin-bottom: 2rem;'>
+                        <h4>3 Simple Steps to Find a Room!</h4>
+                    </div>
+                    
+                    <div style='display: flex; flex-direction: column; gap: 1.5rem;'>
+                        <div style='display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f0f9ff; border-radius: 8px;'>
+                            <div style='background: var(--primary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;'>1</div>
+                            <div>
+                                <h4>🔍 Search for Room</h4>
+                                <p>Enter location, room type, and your budget. We'll show you suitable rooms.</p>
+                            </div>
+                        </div>
+                        
+                        <div style='display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f0fdf4; border-radius: 8px;'>
+                            <div style='background: var(--success-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;'>2</div>
+                            <div>
+                                <h4>📞 Contact Directly</h4>
+                                <p>Get landlord contact information without any additional charges.</p>
+                            </div>
+                        </div>
+                        
+                        <div style='display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #fef3c7; border-radius: 8px;'>
+                            <div style='background: var(--secondary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;'>3</div>
+                            <div>
+                                <h4>🏠 Visit and Move</h4>
+                                <p>Schedule a meeting, see the room, and if satisfied - move in!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style='background: #1f2937; color: white; padding: 1rem; border-radius: 8px; margin-top: 2rem; text-align: center;'>
+                        <h4>💡 ChumbaChap Benefits</h4>
+                        <ul style='text-align: left; margin-top: 1rem;'>
+                            <li>✅ No broker fees</li>
+                            <li>✅ Direct communication with landlords</li>
+                            <li>✅ Verified landlords</li>
+                            <li>✅ Fast and safe service</li>
+                        </ul>
+                    </div>
+                ">
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <h4>Hatua 3 Rahisi Kupata Chumba!</h4>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f0f9ff; border-radius: 8px;">
+                            <div style="background: var(--primary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">1</div>
+                            <div>
+                                <h4>🔍 Tafuta Chumba</h4>
+                                <p>Ingiza eneo, aina ya chumba, na bajeti yako. Tutakuonyesha vyumba vinavyofaa.</p>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f0fdf4; border-radius: 8px;">
+                            <div style="background: var(--success-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">2</div>
+                            <div>
+                                <h4>📞 Wasiliana Moja kwa Moja</h4>
+                                <p>Pata taarifa za kuwasiliana na mmiliki wa nyumba bila kuongeza gharama.</p>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #fef3c7; border-radius: 8px;">
+                            <div style="background: var(--secondary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">3</div>
+                            <div>
+                                <h4>🏠 Tembelea na Uhamie</h4>
+                                <p>Panga mkutano, ona chumba, na ikiwa umeridhika - uhamie!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #1f2937; color: white; padding: 1rem; border-radius: 8px; margin-top: 2rem; text-align: center;">
+                        <h4>💡 Faida za ChumbaChap</h4>
+                        <ul style="text-align: left; margin-top: 1rem;">
+                            <li>✅ Hakuna ada za madalali</li>
+                            <li>✅ Wasiliana moja kwa moja na wenye nyumba</li>
+                            <li>✅ Wenye nyumba waliodhibitishwa</li>
+                            <li>✅ Huduma ya haraka na salama</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Other Modals for completeness -->
+    <div class="modal" id="cookiesModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-sw="🍪 Sera ya Cookies" data-en="🍪 Cookie Policy">🍪 Sera ya Cookies</h3>
+                <button class="close-modal" onclick="closeModal('cookiesModal')">&times;</button>
+            </div>
+            <div style="max-height: 60vh; overflow-y: auto;">
+                <p data-sw="ChumbaChap inatumia cookies kuboresha uzoefu wako wa kutumia tovuti. Cookies ni faili ndogo zinazohifadhiwa kwenye kivinjari chako." data-en="ChumbaChap uses cookies to improve your website experience. Cookies are small files stored in your browser.">ChumbaChap inatumia cookies kuboresha uzoefu wako wa kutumia tovuti. Cookies ni faili ndogo zinazohifadhiwa kwenye kivinjari chako.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="disclaimerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-sw="⚠️ Kanusho" data-en="⚠️ Disclaimer">⚠️ Kanusho</h3>
+                <button class="close-modal" onclick="closeModal('disclaimerModal')">&times;</button>
+            </div>
+            <div style="max-height: 60vh; overflow-y: auto;">
+                <p data-sw="ChumbaChap ni jukwaa la kuunganisha wapangaji na wenye nyumba. Hatutoi dhamana za ubora wa vyumba au makubaliano yanayofanywa." data-en="ChumbaChap is a platform connecting tenants and landlords. We do not guarantee room quality or agreements made.">ChumbaChap ni jukwaa la kuunganisha wapangaji na wenye nyumba. Hatutoi dhamana za ubora wa vyumba au makubaliano yanayofanywa.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="helpModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-sw="❓ Msaada" data-en="❓ Help">❓ Msaada</h3>
+                <button class="close-modal" onclick="closeModal('helpModal')">&times;</button>
+            </div>
+            <div style="max-height: 60vh; overflow-y: auto;">
+                <div data-sw="
+                    <h4>Maswali Yanayoulizwa Mara kwa Mara:</h4>
+                    
+                    <h5>Q: Je, ni gharama gani ya kutumia ChumbaChap?</h5>
+                    <p>A: Kutafuta vyumba ni bure kabisa. Hakuna ada za madalali.</p>
+                    
+                    <h5>Q: Jinsi gani ya kujua mmiliki ni wa kweli?</h5>
+                    <p>A: Angalia alama ya 'Verified' na daima tembelea chumba kabla ya kulipa.</p>
+                    
+                    <h5>Q: Naweza kupata msaada vipi?</h5>
+                    <p>A: Wasiliana nasi kupitia simu au WhatsApp kwa msaada haraka.</p>
+                " data-en="
+                    <h4>Frequently Asked Questions:</h4>
+                    
+                    <h5>Q: What does it cost to use ChumbaChap?</h5>
+                    <p>A: Searching for rooms is completely free. No broker fees.</p>
+                    
+                    <h5>Q: How do I know if a landlord is real?</h5>
+                    <p>A: Look for the 'Verified' badge and always visit the room before paying.</p>
+                    
+                    <h5>Q: How can I get help?</h5>
+                    <p>A: Contact us via phone or WhatsApp for quick assistance.</p>
+                ">
+                    <h4>Maswali Yanayoulizwa Mara kwa Mara:</h4>
+                    
+                    <h5>Q: Je, ni gharama gani ya kutumia ChumbaChap?</h5>
+                    <p>A: Kutafuta vyumba ni bure kabisa. Hakuna ada za madalali.</p>
+                    
+                    <h5>Q: Jinsi gani ya kujua mmiliki ni wa kweli?</h5>
+                    <p>A: Angalia alama ya 'Verified' na daima tembelea chumba kabla ya kulipa.</p>
+                    
+                    <h5>Q: Naweza kupata msaada vipi?</h5>
+                    <p>A: Wasiliana nasi kupitia simu au WhatsApp kwa msaada haraka.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Global variables
+        let currentLang = 'sw';
+        let currentTheme = 'light';
+        let listings = [];
+        let map;
+        let mapMarkers = [];
+
+        // Enhanced sample listing data with coordinates
+        const sampleListings = [
+            {
+                id: 1,
+                title: "Chumba cha Kisasa - Sinza",
+                location: "Sinza, Dar es Salaam",
+                price: 150000,
+                type: "self-contained",
+                amenities: ["maji", "umeme", "wifi", "parking", "furnished"],
+                verified: true,
+                aiMatch: 92,
+                coordinates: [-6.7924, 39.2083],
+                contact: {
+                    name: "Bwana Mwalimu",
+                    phone: "+255 754 987 654",
+                    whatsapp: "+255754987654"
+                },
+                description: "Chumba cha kisasa chenye mazingira mzuri na usalama wa juu. Kina umeme wa kudumu, maji safi, na Wi-Fi ya haraka. Karibu na duka, shule na kituo cha mabasi.",
+                images: ["image1.jpg", "image2.jpg"],
+                features: {
+                    size: "25m²",
+                    rooms: 1,
+                    bathrooms: 1,
+                    floor: "Ghorofa ya 2",
+                    yearBuilt: 2020
+                }
+            },
+            {
+                id: 2,
+                title: "Apartment ya Familia - Mbezi",
+                location: "Mbezi Beach, Dar es Salaam",
+                price: 300000,
+                type: "apartment",
+                amenities: ["maji", "umeme", "wifi", "parking", "security", "generator"],
+                verified: true,
+                aiMatch: 88,
+                coordinates: [-6.7236, 39.2151],
+                contact: {
+                    name: "Mama Juma",
+                    phone: "+255 712 345 678",
+                    whatsapp: "+255712345678"
+                },
+                description: "Apartment kubwa ya familia yenye vyumba 3, jikoni na sebule. Iko karibu na pwani na huduma mbalimbali.",
+                images: ["image3.jpg", "image4.jpg"],
+                features: {
+                    size: "85m²",
+                    rooms: 3,
+                    bathrooms: 2,
+                    floor: "Ghorofa ya 1",
+                    yearBuilt: 2018
+                }
+            },
+            {
+                id: 3,
+                title: "Bedsitter Modern - Kimara",
+                location: "Kimara, Dar es Salaam",
+                price: 80000,
+                type: "bedsitter",
+                amenities: ["maji", "umeme", "security"],
+                verified: false,
+                aiMatch: 76,
+                coordinates: [-6.7735, 39.2126],
+                contact: {
+                    name: "Dada Mary",
+                    phone: "+255 765 432 109",
+                    whatsapp: "+255765432109"
+                },
+                description: "Bedsitter nzuri kwa wanafunzi na vijana wanaofanya kazi. Eneo lenye usalama na huduma za karibu.",
+                images: ["image5.jpg", "image6.jpg"],
+                features: {
+                    size: "18m²",
+                    rooms: 1,
+                    bathrooms: 1,
+                    floor: "Ghorofa ya chini",
+                    yearBuilt: 2015
+                }
+            },
+            {
+                id: 4,
+                title: "Chumba cha Pekee - Mwenge",
+                location: "Mwenge, Dar es Salaam",
+                price: 120000,
+                type: "chumba",
+                amenities: ["maji", "umeme", "wifi"],
+                verified: true,
+                aiMatch: 85,
+                coordinates: [-6.7919, 39.2086],
+                contact: {
+                    name: "Mama Neema",
+                    phone: "+255 678 543 210",
+                    whatsapp: "+255678543210"
+                },
+                description: "Chumba cha mtu mmoja, kiko karibu na vituo vya mabasi na masoko. Usalama wa juu na mazingira mazuri.",
+                images: ["image7.jpg", "image8.jpg"],
+                features: {
+                    size: "15m²",
+                    rooms: 1,
+                    bathrooms: 0,
+                    floor: "Ghorofa ya 1",
+                    yearBuilt: 2019
+                }
+            }
+        ];
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            listings = sampleListings;
+            displayListings(listings);
+            initializeEventListeners();
+            loadUserPreferences();
+            initializeMap();
+            updateStats();
+        });
+
+        // Initialize Leaflet map
+        function initializeMap() {
+            map = L.map('map').setView([-6.7924, 39.2083], 12);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add markers for listings
+            updateMapMarkers(listings);
+        }
+
+        // Update map markers based on listings
+        function updateMapMarkers(listingsToShow) {
+            // Clear existing markers
+            mapMarkers.forEach(marker => map.removeLayer(marker));
+            mapMarkers = [];
+
+            // Add new markers
+            listingsToShow.forEach(listing => {
+                if (listing.coordinates) {
+                    const marker = L.marker(listing.coordinates)
+                        .addTo(map)
+                        .bindPopup(`
+                            <div>
+                                <h4>${listing.title}</h4>
+                                <p>${listing.location}</p>
+                                <p><strong>TZS ${listing.price.toLocaleString()}/mwezi</strong></p>
+                                <button onclick="showListingDetails(${listing.id})" class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;">
+                                    Angalia Maelezo
+                                </button>
+                            </div>
+                        `);
+                    mapMarkers.push(marker);
+                }
+            });
+
+            // Adjust map view if there are markers
+            if (listingsToShow.length > 0 && listingsToShow[0].coordinates) {
+                const group = new L.featureGroup(mapMarkers);
+                map.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const totalRooms = listings.length;
+            const verifiedRooms = listings.filter(room => room.verified).length;
+            const verifiedPercentage = Math.round((verifiedRooms / totalRooms) * 100);
+            
+            document.getElementById('statsRooms').textContent = `${totalRooms}+`;
+            document.getElementById('statsVerified').textContent = `${verifiedPercentage}%`;
+            document.getElementById('statsCities').textContent = '4';
+        }
+
+        // Event listeners
+        function initializeEventListeners() {
+            // Search form
+            document.getElementById('searchForm').addEventListener('submit', handleSearch);
+            
+            // Smooth scrolling for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Navbar scroll effect
+            window.addEventListener('scroll', function() {
+                const navbar = document.querySelector('.navbar');
+                if (window.scrollY > 50) {
+                    navbar.style.background = 'rgba(255, 255, 255, 0.98)';
+                    navbar.style.backdropFilter = 'blur(20px)';
+                } else {
+                    navbar.style.background = 'rgba(255, 255, 255, 0.95)';
+                    navbar.style.backdropFilter = 'blur(20px)';
+                }
+            });
+
+            // Set dynamic year in footer
+            document.getElementById('footerYear').textContent = new Date().getFullYear();
+        }
+
+        // Search functionality
+        function handleSearch(e) {
+            e.preventDefault();
+            const searchLoading = document.getElementById('searchLoading');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            // Show loading
+            searchLoading.style.display = 'inline-block';
+            submitBtn.disabled = true;
+
+            // Get form data
+            const formData = {
+                location: document.getElementById('locationInput').value,
+                type: document.getElementById('typeSelect').value,
+                budget: parseInt(document.getElementById('budgetInput').value),
+                amenities: Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value),
+                roomCount: document.getElementById('roomCount').value,
+                buildingAge: document.getElementById('building
